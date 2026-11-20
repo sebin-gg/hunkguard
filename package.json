@@ -1,0 +1,58 @@
+{
+  "name": "hunkguard",
+  "displayName": "HunkGuard",
+  "description": "Agentic code edits reviewed per-hunk, powered by a local TrueForge server.",
+  "version": "0.1.0",
+  "publisher": "sebin-gg",
+  "license": "MIT",
+  "engines": { "vscode": "^1.90.0" },
+  "categories": ["AI", "Editing"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      { "command": "hunkguard.openPanel", "title": "HunkGuard: Open Agent Panel" },
+      { "command": "hunkguard.editSelection", "title": "HunkGuard: Edit Selection with Agent" },
+      { "command": "hunkguard.stop", "title": "HunkGuard: Stop Agent" },
+      { "command": "hunkguard.acceptAll", "title": "HunkGuard: Accept All Pending Hunks" },
+      { "command": "hunkguard.rejectAll", "title": "HunkGuard: Reject All Pending Hunks" },
+      { "command": "hunkguard.undoLast", "title": "HunkGuard: Undo Last Applied Hunk" }
+    ],
+    "keybindings": [
+      { "command": "hunkguard.editSelection", "key": "ctrl+alt+k", "mac": "cmd+alt+k", "when": "editorHasSelection" }
+    ],
+    "configuration": {
+      "title": "HunkGuard",
+      "properties": {
+        "hunkguard.trueforgeUrl": { "type": "string", "default": "http://localhost:8790", "description": "Local TrueForge server URL." },
+        "hunkguard.model": { "type": "string", "default": "anthropic/deepseek-flash", "description": "TrueForge model FQN (provider/model)." },
+        "hunkguard.fallbackModels": { "type": "array", "items": { "type": "string" }, "default": ["anthropic/gemini-flash", "anthropic/gpt-luna"], "description": "Fallback models tried in order when the primary model fails." },
+        "hunkguard.lowEndMode": { "type": "boolean", "default": false, "description": "Shrink context budget and tool bounds for small local models (4-8k windows)." },
+        "hunkguard.contextBudgetTokens": { "type": "number", "default": 12000, "description": "Max estimated tokens of auto-retrieved context injected per request." },
+        "hunkguard.maxReadLines": { "type": "number", "default": 400, "description": "Max lines returned per read_file call." },
+        "hunkguard.commandTimeoutMs": { "type": "number", "default": 120000, "description": "Timeout for agent terminal commands." }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "node scripts/build.mjs",
+    "watch": "node scripts/build.mjs --watch",
+    "test": "vitest run",
+    "package": "node scripts/build.mjs && vsce package --no-dependencies -o hunkguard.vsix"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "@truefoundry/trueforge-sdk": "0.185.0",
+    "diff": "9.0.0",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/diff": "8.0.0",
+    "@types/node": "26.6.6",
+    "@types/vscode": "1.146.0",
+    "esbuild": "0.28.2",
+    "typescript": "7.0.2",
+    "vitest": "5.1.1",
+    "@vscode/vsce": "3.9.2"
+  }
+}

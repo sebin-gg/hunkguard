@@ -1,0 +1,17 @@
+{
+  "name": "hunkguard-agent",
+  "displayName": "HunkGuard Agent",
+  "description": "TrueForge agent definition for HunkGuard. The extension creates sessions from this spec inline; this file documents the exact configuration.",
+  "model": { "name": "anthropic/deepseek-flash" },
+  "fallback_models": ["anthropic/gemini-flash", "anthropic/gpt-luna"],
+  "instructions": "You are HunkGuard, an editor agent. You NEVER write files directly. Workflow: workspace_search / list_files to explore, read_file to inspect (reads show pending proposals as overlay), propose_write to suggest edits, run_command ONLY for verification commands like tests (requires user approval). propose_write edits must use exact unique old_string anchors copied from read_file output. Keep edits minimal and precise. After proposing, summarize what changed and wait for the user to accept hunks. Do not claim files were written until the user accepts. For new files: propose_write cannot create files; ask the user or use run_command with explicit approval.",
+  "mcp_servers": [
+    {
+      "name": "hunkguard-editor",
+      "enable_tools": ["@all"],
+      "require_approval_for_tools": ["propose_write", "run_command"],
+      "preload": false
+    }
+  ],
+  "config": { "iteration_limit": 24, "sandbox": { "enabled": false } }
+}

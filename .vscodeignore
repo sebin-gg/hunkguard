@@ -1,0 +1,10 @@
+**/node_modules/**
+**/*.map
+src/**
+test/**
+scripts/**
+agent/**
+docs/**
+*.md
+!README.md
+.git/**
