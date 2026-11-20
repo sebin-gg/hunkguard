@@ -50,12 +50,28 @@ export function walkFiles(root: string, maxFiles = 5000): string[] {
   return out;
 }
 
+let cachedShell: { cmd: string; args: (c: string) => string[] } | null = null;
+
+function pickShell(): { cmd: string; args: (c: string) => string[] } {
+  if (cachedShell) return cachedShell;
+  if (process.platform === 'win32') {
+    // Prefer Git Bash: POSIX quoting/pipes/heredocs behave sanely for agents.
+    for (const p of [process.env.GIT_BASH, 'C:\\Program Files\\Git\\bin\\bash.exe', 'C:\\Program Files (x86)\\Git\\bin\\bash.exe']) {
+      if (p && fs.existsSync(p)) {
+        cachedShell = { cmd: p, args: (c) => ['-c', c] };
+        return cachedShell;
+      }
+    }
+    cachedShell = { cmd: 'cmd.exe', args: (c) => ['/d', '/s', '/c', c] };
+    return cachedShell;
+  }
+  cachedShell = { cmd: '/bin/sh', args: (c) => ['-c', c] };
+  return cachedShell;
+}
 export function runShell(command: string, cwd: string, timeoutMs: number): Promise<{ stdout: string; stderr: string; code: number | null; timedOut: boolean }> {
   return new Promise((resolve) => {
-    // Windows: run via cmd.exe; POSIX: /bin/sh. Never a shell-injection vector beyond what user approved.
-    const shell = process.platform === 'win32' ? 'cmd.exe' : '/bin/sh';
-    const args = process.platform === 'win32' ? ['/d', '/s', '/c', command] : ['-c', command];
-    execFile(shell, args, { cwd, timeout: timeoutMs, maxBuffer: 1024 * 1024, windowsHide: true }, (err, stdout, stderr) => {
+    const { cmd, args } = pickShell();
+    execFile(cmd, args(command), { cwd, timeout: timeoutMs, maxBuffer: 1024 * 1024, windowsHide: true }, (err, stdout, stderr) => {
       const timedOut = !!err && (err as NodeJS.ErrnoException & { killed?: boolean }).killed === true;
       const code = err && typeof (err as { code?: unknown }).code === 'number' ? (err as { code: number }).code : err ? 1 : 0;
       resolve({
