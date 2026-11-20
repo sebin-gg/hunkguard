@@ -8,3 +8,5 @@ docs/**
 *.md
 !README.md
 .git/**
+dist/headless.cjs
+dist/headless.cjs.map

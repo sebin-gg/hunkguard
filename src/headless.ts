@@ -83,6 +83,7 @@ async function main() {
     mcp_servers: [{ name: 'hunkguard-editor', enable_tools: ['@all'], require_approval_for_tools: ['propose_write', 'run_command'], preload_tools: ['workspace_search', 'list_files', 'read_file', 'propose_write', 'run_command'], preload: false }],
     config: { iteration_limit: 24 },
   } } });
+  if (!sess?.data?.id) { console.log('SESSION CREATE FAILED:', JSON.stringify(sess).slice(0, 400)); await mcp.stop(); process.exit(2); }
   const sid = sess.data.id;
   console.log(`session=${sid}`);
 
